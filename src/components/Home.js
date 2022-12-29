@@ -15,7 +15,7 @@ import {
   TableRow,
   TextField,
 } from "@mui/material";
-
+import { BiSortAlt2 } from "react-icons/bi";
 import Paper from "@material-ui/core/Paper";
 import { toast, ToastContainer } from "react-toastify";
 import { isBlank, isEmail } from "../utils";
@@ -43,6 +43,7 @@ const Home = () => {
   const [email, setEmail] = useState();
   const [open, setOpen] = useState(false);
   const [showError, setShowError] = useState(false);
+  const [sortStatus, setSortStatus] = useState(true);
 
   const handleOpen = () => {
     setOpen(true);
@@ -86,11 +87,92 @@ const Home = () => {
       });
     }
   };
+  const handleSort = (column) => {
+    const copy = [...users];
+    if (column === "email") {
+      if (sortStatus) {
+        let sorted = copy.sort((a, b) => {
+          if (a.email < b.email) {
+            return -1;
+          }
+          if (a.email > b.email) {
+            return 1;
+          }
+          return 0;
+        });
 
+        setUsers(sorted);
+        setSortStatus(!sortStatus);
+      } else {
+        let sorted = copy.sort((a, b) => {
+          if (a.email < b.email) {
+            return 1;
+          }
+          if (a.email > b.email) {
+            return -1;
+          }
+          return 0;
+        });
+        setUsers(sorted);
+        setSortStatus(!sortStatus);
+      }
+    }
+    if (column === "name") {
+      if (sortStatus) {
+        let sorted = copy.sort((a, b) => {
+          if (a.name < b.name) {
+            return -1;
+          }
+          if (a.name > b.name) {
+            return 1;
+          }
+          return 0;
+        });
+
+        setUsers(sorted);
+        setSortStatus(!sortStatus);
+      } else {
+        let sorted = copy.sort((a, b) => {
+          if (a.name < b.name) {
+            return 1;
+          }
+          if (a.name > b.name) {
+            return -1;
+          }
+          return 0;
+        });
+        setUsers(sorted);
+        setSortStatus(!sortStatus);
+      }
+    }
+    if (column === "id") {
+      if (sortStatus) {
+        let sorted = copy.sort((a, b) => b.id - a.id);
+        setUsers(sorted);
+        setSortStatus(!sortStatus);
+      } else {
+        let sorted = copy.sort((a, b) => a.id - b.id);
+        setUsers(sorted);
+        setSortStatus(!sortStatus);
+      }
+    }
+  };
   useEffect(() => {
     axios
       .get("https://reqres.in/api/users")
-      .then((resp) => setUsers(resp?.data?.data))
+      .then((resp) => {
+        let arr = [];
+        resp?.data?.data?.map((res) => {
+          let obj = {
+            id: res.id,
+            name: res.first_name + " " + res.last_name,
+            email: res.email,
+            avatar: res.avatar,
+          };
+          arr.push(obj);
+        });
+        setUsers(arr);
+      })
       .catch((err) => console.log(err));
   }, []);
   return (
@@ -117,9 +199,33 @@ const Home = () => {
           <TableHead>
             <TableRow>
               <TableCell>Profile</TableCell>
-              <TableCell align="right">Id</TableCell>
-              <TableCell align="right">Name</TableCell>
-              <TableCell align="right">Email</TableCell>
+              <TableCell align="right">
+                Id
+                <span
+                  style={{ cursor: "pointer" }}
+                  onClick={() => handleSort("id")}
+                >
+                  <BiSortAlt2 />
+                </span>
+              </TableCell>
+              <TableCell align="right">
+                Name
+                <span
+                  style={{ cursor: "pointer" }}
+                  onClick={() => handleSort("name")}
+                >
+                  <BiSortAlt2 />
+                </span>
+              </TableCell>
+              <TableCell align="right">
+                Email
+                <span
+                  style={{ cursor: "pointer" }}
+                  onClick={() => handleSort("email")}
+                >
+                  <BiSortAlt2 />
+                </span>
+              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -129,9 +235,7 @@ const Home = () => {
                   <img src={row.avatar} width="50px" height="50px" />
                 </TableCell>
                 <TableCell align="right">{row.id}</TableCell>
-                <TableCell align="right">
-                  {row.first_name + " " + row.last_name}
-                </TableCell>
+                <TableCell align="right">{row.name}</TableCell>
                 <TableCell align="right">{row.email}</TableCell>
               </TableRow>
             ))}
